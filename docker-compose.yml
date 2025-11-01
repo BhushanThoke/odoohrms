@@ -6,7 +6,7 @@ services:
       - POSTGRES_USER=odoo18
       - POSTGRES_PASSWORD=odoo18
     ports:
-      - "5434:5432"        # Host port changed to 5434 for Odoo 18 database
+      - "5434:5432"
     volumes:
       - odoo18-db-data:/var/lib/postgresql/data
     networks:
@@ -14,14 +14,15 @@ services:
       - dokploy-network
 
   odoo18:
-    image: odoo:18.0
+    build: .
+    image: custom-odoo18:latest
     depends_on:
       - db18
     ports:
-      - "8070:8069"        # Host port changed to 8070 for Odoo 18
+      - "8070:8069"
     environment:
       - HOST=db18
-      - PORT=5432          # Docker service internal port
+      - PORT=5432
       - USER=odoo18
       - PASSWORD=odoo18
     volumes:
@@ -37,6 +38,9 @@ services:
       - "traefik.http.routers.odoo18.rule=Host(`${ODOO18_HOST}`)"
       - "traefik.http.routers.odoo18.tls.certresolver=letsencrypt"
       - "traefik.http.services.odoo18.loadbalancer.server.port=8070"
+    command: >
+      odoo
+      --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
 
 volumes:
   odoo18-db-data:
